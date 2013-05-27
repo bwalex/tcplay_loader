@@ -1,0 +1,15 @@
+output raw
+offset = 0x500
+
+option map
+
+# useless without -zm
+option showdead
+option eliminate
+
+order
+	clname TABLE offset = 0x500
+	clname CODE
+	clname DATA
+	clname BSS
+	clname STACK
