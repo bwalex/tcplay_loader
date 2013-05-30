@@ -74,7 +74,7 @@ _BSS segment word public 'BSS'
 _BSS ends
 
 
-STACK_SIZE      equ     2048
+STACK_SIZE      equ     4096
 
 STACK   segment para stack 'STACK'
         db      (STACK_SIZE) dup(?)

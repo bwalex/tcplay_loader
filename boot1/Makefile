@@ -7,8 +7,8 @@ CWARNFLAGS?=-wx
 CFLAGS?= -ms -ecd -3 -lr -zl $(COPTFLAGS) $(CWARNFLAGS) -zq -q -i=$(WATCOM)/h -zm
 ASFLAGS?=-zq -i=$(WATCOM)/src/startup
 
-ASM_OBJS= hdr.o startup.o
-C_OBJS= boot1.o bios.o crc32_tiny.o aes256.o
+ASM_OBJS= hdr.o startup.o u8shift.o
+C_OBJS= boot1.o bios.o fun.o crc32_tiny.o aes256.o rmd160.o sha512.o
 
 boot1.bin: $(ASM_OBJS) $(C_OBJS)
 	$(WCC) $(CFLAGS) -fe=$@ $^ @link.scr
@@ -21,5 +21,6 @@ $(C_OBJS): %.o: %.c
 
 clean:
 	$(RM) *.o
+	$(RM) *.err
 	$(RM) boot1.map boot1.err
 	$(RM) boot1.bin

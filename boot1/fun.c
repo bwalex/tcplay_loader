@@ -26,16 +26,52 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#include "fun.h"
 
-void *memcpy(void *dst, const void *src, int n);
-#pragma aux memcpy =	\
-	"start: lodsb"	\
-	"stosb"		\
-	"loop start"	\
-	modify [ax]	\
-	parm [di] [si] [cx]
+void *
+_memcpy(void *dst, const void *src, int n)
+{
+	return inl_memcpy(dst, src, n);
+}
 
-void *memset(void *s, int c, int n);
-#pragma aux memset =	\
-	"rep stosb"	\
-	parm [di] [ax] [cx]
+void *
+_memset(void *s, int c, int n)
+{
+	return inl_memset(s, c, n);
+}
+
+void *
+_memxor(void *s, int c, int n)
+{
+	return inl_memxor(s, c, n);
+}
+
+void *
+_memmove(void *dst, const void *src, int n)
+{
+	return inl_memmove(dst, src, n);
+}
+
+void
+_bswap(void *dst, const void *src, int n)
+{
+	inl_bswap(dst, src, n);
+}
+
+void
+_bswap_inplace(void *mem, int n)
+{
+	inl_bswap_inplace(mem, n);
+}
+
+uint64_t
+_rotr64_c(uint64_t a, int b)
+{
+	return ((a << (8*sizeof(a)-b)) | (a >> b));
+}
+
+uint64_t
+_rotr64(uint64_t a, int b)
+{
+	return inl_rotr64(a, b);
+}

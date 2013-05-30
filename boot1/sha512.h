@@ -26,44 +26,25 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
 #include <sys/types.h>
 #include <stdint.h>
 
-void inl_bios_print(char *str);
-#pragma aux inl_bios_print =	\
-	"start: lodsb"		\
-	"or al, al"		\
-	"jz finish"		\
-	"mov ah, 0x0E"		\
-	"mov bx, 0x0007"	\
-	"int 0x10"		\
-	"jmp start"		\
-	"finish:"		\
-	modify [ax bx]		\
-	parm [si]
 
-int inl_bios_read_sectors(int dev, void *dst, int start, int count);
-#pragma aux inl_bios_read_sectors = \
-	"mov ah, 0x02"		\
-	"xor ch, ch"		\
-	"xor dh, dh"		\
-	"int 0x13"		\
-	"jnc finish"		\
-	"xor al, al"		\
-	"finish: xor ah, ah"	\
-	parm [dx] [bx] [cx] [ax]	\
-	value [ax]
+#define SHA512_BLOCK_SZ		128
+#define SHA512_DIGEST_SZ	64
+
+struct sha512_ctx {
+	uint64_t X[17];
+	uint64_t h[8];
+	uint16_t bytes_in_x;
+	uint32_t bytes;
+};
 
 
-void
-bios_print(char *str)
-{
-	inl_bios_print(str);
-}
+void sha512_init(struct sha512_ctx *ctx);
+void sha512_compress(struct sha512_ctx *ctx, uint64_t *X);
+void sha512_update(struct sha512_ctx *ctx, uint8_t *msg, uint32_t msglen);
+void sha512_finalize(struct sha512_ctx *ctx, uint8_t *dst);
+void sha512_hash(uint8_t *dst, uint8_t *msg, int msglen);
+void sha512_hmac(uint8_t *dst, uint8_t *key, int keylen, uint8_t *msg, int msglen);
 
-int
-bios_read_sectors(int dev, void *dst, int start, int count)
-{
-	return inl_bios_read_sectors(dev, dst, start, count);
-}

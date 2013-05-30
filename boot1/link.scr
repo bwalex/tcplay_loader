@@ -5,7 +5,7 @@ option map
 
 # useless without -zm
 option showdead
-option eliminate
+#option eliminate
 
 order
 	clname TABLE offset = 0x500

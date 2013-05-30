@@ -30,40 +30,22 @@
 #include <sys/types.h>
 #include <stdint.h>
 
-void inl_bios_print(char *str);
-#pragma aux inl_bios_print =	\
-	"start: lodsb"		\
-	"or al, al"		\
-	"jz finish"		\
-	"mov ah, 0x0E"		\
-	"mov bx, 0x0007"	\
-	"int 0x10"		\
-	"jmp start"		\
-	"finish:"		\
-	modify [ax bx]		\
-	parm [si]
 
-int inl_bios_read_sectors(int dev, void *dst, int start, int count);
-#pragma aux inl_bios_read_sectors = \
-	"mov ah, 0x02"		\
-	"xor ch, ch"		\
-	"xor dh, dh"		\
-	"int 0x13"		\
-	"jnc finish"		\
-	"xor al, al"		\
-	"finish: xor ah, ah"	\
-	parm [dx] [bx] [cx] [ax]	\
-	value [ax]
+#define RMD160_BLOCK_SZ		64
+#define RMD160_DIGEST_SZ	20
+
+struct rmd160_ctx {
+	uint32_t X[16];
+	uint32_t h[5];
+	uint8_t bytes_in_x;
+	uint32_t bytes;
+};
 
 
-void
-bios_print(char *str)
-{
-	inl_bios_print(str);
-}
+void rmd160_init(struct rmd160_ctx *ctx);
+void rmd160_compress(struct rmd160_ctx *ctx, uint32_t *X);
+void rmd160_update(struct rmd160_ctx *ctx, uint8_t *msg, uint32_t msglen);
+void rmd160_finalize(struct rmd160_ctx *ctx, uint8_t *dst);
+void rmd160_hash(uint8_t *dst, uint8_t *msg, int msglen);
+void rmd160_hmac(uint8_t *dst, uint8_t *key, int keylen, uint8_t *msg, int msglen);
 
-int
-bios_read_sectors(int dev, void *dst, int start, int count)
-{
-	return inl_bios_read_sectors(dev, dst, start, count);
-}
