@@ -46,7 +46,7 @@ memxor(void *mem, int c, size_t cnt)
 	c = c & 0xff;
 
 	while(cnt-- > 0) {
-		*m++ ^ (uint8_t)c;
+		*m++ ^= (uint8_t)c;
 	}
 }
 #endif
