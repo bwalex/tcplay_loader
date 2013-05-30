@@ -29,8 +29,25 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#ifndef _STANDALONE
 #include "fun.h"
+#endif
 #include "rmd160.h"
+
+
+#ifdef _STANDALONE
+static
+void
+memxor(void *mem, int c, size_t cnt)
+{
+	uint8_t *m = mem;
+	c = c & 0xff;
+
+	while(cnt-- > 0) {
+		*m++ ^ (uint8_t)c;
+	}
+}
+#endif
 
 
 #define f0(x, y, z)	(x ^ y ^ z)

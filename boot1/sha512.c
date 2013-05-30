@@ -28,13 +28,61 @@
  */
 #include <sys/types.h>
 #include <stdint.h>
+#ifndef _STANDALONE
 #include "fun.h"
+#endif
 #include "sha512.h"
 
 
 #if 0
 #define _SEPARATE_TEMP_VARS
 #endif
+
+
+#ifdef _STANDALONE
+static
+uint64_t
+rotr64(uint64_t a, int b)
+{
+	return ((a << (8*sizeof(a)-b)) | (a >> b));
+}
+
+static
+void
+bswap_inplace(uint64_t *p, size_t sz)
+{
+	*p = (((*p & 0x00000000000000FFULL) << 56) |
+	      ((*p & 0x000000000000FF00ULL) << 40) |
+	      ((*p & 0x0000000000FF0000ULL) << 24) |
+	      ((*p & 0x00000000FF000000ULL) <<  8) |
+	      ((*p & 0x000000FF00000000ULL) >>  8) |
+	      ((*p & 0x0000FF0000000000ULL) >> 24) |
+	      ((*p & 0x00FF000000000000ULL) >> 40) |
+	      ((*p & 0xFF00000000000000ULL) >> 56));
+}
+
+static
+void
+bswap(uint64_t *dst, uint64_t *src, size_t sz)
+{
+	/* sz is assumed to be 8 */
+	*dst = *src;
+	bswap_inplace(dst, sz);
+}
+
+static
+void
+memxor(void *mem, int c, size_t cnt)
+{
+	uint8_t *m = mem;
+	c = c & 0xff;
+
+	while(cnt-- > 0) {
+		*m++ ^= (uint8_t)c;
+	}
+}
+#endif
+
 
 #define rotr rotr64
 
@@ -191,7 +239,7 @@ sha512_finalize(struct sha512_ctx *ctx, uint8_t *dst)
 
 	memset(((uint8_t *)ctx->X)+ctx->bytes_in_x, 0, sizeof(ctx->X)-ctx->bytes_in_x);
 
-	ctx->X[(ctx->bytes_in_x >> 3)] ^= (uint64_t)1ULL << (((ctx->bytes_in_x & 0x7) << 3 /* ?? */) + 7);
+	ctx->X[(ctx->bytes_in_x >> 3)] ^= (uint64_t)1ULL << (((ctx->bytes_in_x & 0x7) << 3) + 7);
 	
 	if ((ctx->bytes_in_x) >= 120) {
 		/* length goes to next block */
