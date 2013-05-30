@@ -30,6 +30,8 @@
 #include <stdint.h>
 #ifndef _STANDALONE
 #include "fun.h"
+#else
+#include <string.h>
 #endif
 #include "sha512.h"
 
@@ -63,8 +65,9 @@ bswap_inplace(uint64_t *p, size_t sz)
 
 static
 void
-bswap(uint64_t *dst, uint64_t *src, size_t sz)
+bswap(void *dstv, uint64_t *src, size_t sz)
 {
+	uint64_t *dst = dstv;
 	/* sz is assumed to be 8 */
 	*dst = *src;
 	bswap_inplace(dst, sz);
@@ -235,6 +238,8 @@ sha512_finalize(struct sha512_ctx *ctx, uint8_t *dst)
 	uint64_t len64 = (uint64_t)ctx->bytes;
 	int i;
 
+	/* len64 must be in bits */
+	len64 <<= 3;
 	bswap_inplace(&len64, sizeof(uint64_t));
 
 	memset(((uint8_t *)ctx->X)+ctx->bytes_in_x, 0, sizeof(ctx->X)-ctx->bytes_in_x);
@@ -248,8 +253,7 @@ sha512_finalize(struct sha512_ctx *ctx, uint8_t *dst)
 	}
 
 	/* append length in bits */
-	ctx->X[14] = len64 >> 61;
-	ctx->X[15] = len64 << 3;
+	ctx->X[15] = len64;
 	sha512_compress(ctx, ctx->X);
 
 	for (i = 0; i < 8; i++) {	

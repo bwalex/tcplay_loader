@@ -31,6 +31,8 @@
 #include <stdint.h>
 #ifndef _STANDALONE
 #include "fun.h"
+#else
+#include <string.h>
 #endif
 #include "rmd160.h"
 
