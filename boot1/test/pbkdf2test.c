@@ -9,7 +9,7 @@
 #include "sha512.h"
 #include <errno.h>
 #include <openssl/evp.h>
-
+#include <time.h>
 
 
 struct pbkdf2_test {
@@ -193,43 +193,58 @@ run_pbkdf2_tests(void)
 #endif
 }
 
+#define TIME_CODE(code)	\
+	cs = clock();	\
+	code;		\
+	ce = clock();	\
+	printf("Run time: %.4lfs\n", (double)(ce-cs)/CLOCKS_PER_SEC);
+
 void
 single_pass(char *pass, char *salt, int iterations, int dklen)
 {
 	uint8_t saltbuf[1024];
         uint8_t *dk;
         int j;
+	clock_t cs, ce;
 
 	dk = malloc(dklen);
 
 	strcpy(saltbuf, salt);
 
+	TIME_CODE(
 	pbkdf2(dk, dklen, pass, strlen(pass), saltbuf, strlen(salt), iterations,
 	    sha512_hmac, SHA512_DIGEST_SZ);
+	)
 
 	printf("Using HMAC-SHA-512:    ");
         for (j=0; j < dklen; j++)
                 printf("%02x", dk[j]);
         printf("\n");
-	
+
+	TIME_CODE(
 	pbkdf2_openssl("SHA512", iterations, pass, strlen(pass), saltbuf,
 	    strlen(salt), dklen, dk);
+	)
 	
 	printf("Reference (OpenSSL):   ");
         for (j=0; j < dklen; j++)
                 printf("%02x", dk[j]);
 	printf("\n");
 
+	TIME_CODE(
 	pbkdf2(dk, dklen, pass, strlen(pass), saltbuf, strlen(salt), iterations,
 	    rmd160_hmac, RMD160_DIGEST_SZ);
+	)
 
 	printf("Using HMAC-RIPEMD-160: ");
         for (j=0; j < dklen; j++)
                 printf("%02x", dk[j]);
         printf("\n");
 
+	TIME_CODE(
 	pbkdf2_openssl("RIPEMD160", iterations, pass, strlen(pass), saltbuf,
 	    strlen(salt), dklen, dk);
+	)
 	
 	printf("Reference (OpenSSL):   ");
         for (j=0; j < dklen; j++)
