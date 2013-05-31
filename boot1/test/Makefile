@@ -35,4 +35,5 @@ clean:
 	$(RM) sha512ref
 	$(RM) sha512test
 	$(RM) rmd160test
+	$(RM) pbkdf2test
 	$(RM) ascii2hex
