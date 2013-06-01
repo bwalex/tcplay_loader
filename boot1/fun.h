@@ -85,24 +85,20 @@ void *_memmove(void *dst, const void *src, int n);
 	"mov ax, di"		\
 	"sub ax, si"		\
 	"cmp ax, cx"		\
-	"jb backwards"		\
+	"jnb do_copy"		\
 				\
-	"forwards:"		\
-	"lodsb"			\
-	"stosb"			\
-	"loop forwards"		\
-	"jmp finish"		\
-				\
-	"backwards:"		\
+	"setup_backwards:"	\
 	"dec cx"		\
 	"add di, cx"		\
 	"add si, cx"		\
 	"inc cx"		\
 	"std"			\
-	"backwards_loop:"	\
+				\
+	"do_copy:"		\
 	"lodsb"			\
 	"stosb"			\
-	"loop backwards_loop"	\
+	"loop do_copy"		\
+				\
 	"cld"			\
 	"finish:"		\
 	modify [ax]		\
