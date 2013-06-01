@@ -57,6 +57,16 @@ void *_memset(void *s, int c, int n);
 
 
 
+#define bzero inl_bzero
+
+void *inl_bzero(void *m, int sz);
+#pragma aux inl_bzero =		\
+	"xor ax,ax"		\
+	"rep stosb"		\
+	parm [di] [cx]
+
+
+
 #define memxor inl_memxor
 
 void *inl_memxor(void *s, int c, int n);
