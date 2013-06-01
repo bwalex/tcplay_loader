@@ -159,7 +159,7 @@ void
 bios_print_hex(uint8_t *buf, int len)
 {
 	char b;
-	char n;
+	int n;
 
 	while (len-- > 0) {
 		b = *buf++;
