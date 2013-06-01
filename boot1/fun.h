@@ -123,6 +123,23 @@ int _strlen(char *str);
 
 
 
+#define memcmp inl_memcmp
+
+int inl_memcmp(void *m1, void *m2, int n);
+#pragma aux inl_memcmp =	\
+	"start:"		\
+	"lodsb"			\
+	"xor al, [di]"		\
+	"jnz finish"		\
+	"inc di"		\
+	"loop start"		\
+	"finish:"		\
+	modify [ax]		\
+	parm [si] [di] [cx]	\
+	value [ax]
+
+
+
 #define bswap _bswap
 
 void inl_bswap(void *dst, const void *src, int n);
