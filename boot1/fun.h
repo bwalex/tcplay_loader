@@ -97,12 +97,13 @@ void *_memmove(void *dst, const void *src, int n);
 	"dec cx"		\
 	"add di, cx"		\
 	"add si, cx"		\
-	"mov al, [si]"		\
-	"mov [di], al"		\
-	"dec di"		\
-	"dec si"		\
-	"or cx,cx"		\
-	"jnz backwards"		\
+	"inc cx"		\
+	"std"			\
+	"backwards_loop:"	\
+	"lodsb"			\
+	"stosb"			\
+	"loop backwards_loop"	\
+	"cld"			\
 	"finish:"		\
 	modify [ax]		\
 	parm [di] [si] [cx]
