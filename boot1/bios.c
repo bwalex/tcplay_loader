@@ -81,6 +81,21 @@ char inl_bios_getc(void);
 	"int 0x16"			\
 	value [al]
 
+void inl_bios_unputc(void);
+#pragma aux inl_bios_unputc =		\
+	"mov ah, 0x0F"			\
+	"int 0x10"			\
+	"mov ah, 0x03"			\
+	"int 0x10"			\
+	"dec dl"			\
+	"mov ah, 0x02"			\
+	"int 0x10"			\
+	"mov ah, 0x0A"			\
+	"mov al, 0x20"			\
+	"mov cx, 1"			\
+	"int 0x10"			\
+	modify [ax bx cx dx sp bp si di]
+
 void
 bios_print(char *str)
 {
@@ -102,6 +117,17 @@ bios_read_line(char *buf, int maxlen, int flags)
 	while (read != maxlen) {
 		c = inl_bios_getc();
 		switch (c) {
+		case 0x08: /* BACKSPACE */
+			if (read > 0) {
+				--read;
+				--buf;
+				if (flags & BIOS_RL_ECHO) {
+					inl_bios_unputc();
+				}
+			}
+			break;
+			/* NOT REACHED */
+
 		case 0x0d: /* RETURN */
 			goto done;
 			/* NOT REACHED */
