@@ -109,15 +109,14 @@ void *_memmove(void *dst, const void *src, int n);
 #define strlen inl_strlen
 
 int inl_strlen(char *str);
+int _strlen(char *str);
 #pragma aux inl_strlen =	\
-	"xor cx,cx"		\
+	"mov cx,-1"		\
 	"start:"		\
 	"lodsb"			\
-	"or al,al"		\
-	"jz finish"		\
 	"inc cx"		\
-	"jmp start"		\
-	"finish:"		\
+	"or al,al"		\
+	"jnz start"		\
 	modify [ax]		\
 	parm [si]		\
 	value [cx]

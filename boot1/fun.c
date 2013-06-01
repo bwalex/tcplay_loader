@@ -52,6 +52,12 @@ _memmove(void *dst, const void *src, int n)
 	return inl_memmove(dst, src, n);
 }
 
+int
+_strlen(char *str)
+{
+	return inl_strlen(str);
+}
+
 void
 _bswap(void *dst, const void *src, int n)
 {
