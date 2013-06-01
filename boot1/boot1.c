@@ -43,7 +43,6 @@ main()
 {
 	char *test = "Foobar";
 	char passphrase[65];
-	uint8_t moo[] = { 0xDE, 0xAD, 0xC0, 0xDE };
 	char salt[] = "NaCL\0\0\0\0\0\0";
 	uint8_t dk[128];
 	uint64_t deadc = 0xDEADC0DE12345678ULL;
@@ -82,20 +81,19 @@ main()
 		bios_print(passphrase);
 		bios_print("\r\n");
 
-
+		bios_print("PBKDF2-HMAC-SHA512:\r\n");
 		pbkdf2(dk, dklen, passphrase, strlen(passphrase), salt,
 		    saltlen, iterations, sha512_hmac, SHA512_DIGEST_SZ);
 		bios_print_hex(dk, dklen);
 		bios_print("\r\n");
 
+		bios_print("PBKDF2-HMAC-RIPEMD160:\r\n");
 		pbkdf2(dk, dklen, passphrase, strlen(passphrase), salt,
 		    saltlen, iterations, rmd160_hmac, RMD160_DIGEST_SZ);
 		bios_print_hex(dk, dklen);
 		bios_print("\r\n");
 
 	}
-
-	bios_print_hex(moo, sizeof(moo));
 
 	bios_print("\r\n");
 	bios_print_number(37, 10);
