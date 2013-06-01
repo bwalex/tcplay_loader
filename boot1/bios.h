@@ -26,6 +26,8 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#include <sys/types.h>
+#include <stdint.h>
 
 #define BIOS_RL_NO_ECHO		0x00
 #define BIOS_RL_ECHO		0x01
@@ -36,3 +38,5 @@ void bios_print(char *str);
 void bios_clear_kbd_buf(void);
 int bios_read_line(char *buf, int maxlen, int flags);
 int bios_read_sectors(int dev, void *dst, int start, int count);
+void bios_print_hex(uint8_t *buf, int len);
+void bios_print_number(int n, int base);

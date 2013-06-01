@@ -153,6 +153,41 @@ done:
 	return read;
 }
 
+static char digits[] = "0123456789abcdef";
+
+void
+bios_print_hex(uint8_t *buf, int len)
+{
+	char b;
+	char n;
+
+	while (len-- > 0) {
+		b = *buf++;
+		n = (b & 0xf0) >> 4;
+		inl_bios_putc(digits[n]);
+
+		n = (b & 0x0f);
+		inl_bios_putc(digits[n]);
+	}
+}
+
+
+void
+bios_print_number(int n, int base)
+{
+	char buf[16];
+	int i = 0;
+
+	while (n > 0) {
+		buf[i++] = digits[(n % base)];
+		n /= base;
+	}
+
+	while (--i >= 0) {
+		inl_bios_putc(buf[i]);
+	}
+}
+
 int
 bios_read_sectors(int dev, void *dst, int start, int count)
 {
