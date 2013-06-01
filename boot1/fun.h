@@ -106,6 +106,24 @@ void *_memmove(void *dst, const void *src, int n);
 
 
 
+#define strlen inl_strlen
+
+int inl_strlen(char *str);
+#pragma aux inl_strlen =	\
+	"xor cx,cx"		\
+	"start:"		\
+	"lodsb"			\
+	"or al,al"		\
+	"jz finish"		\
+	"inc cx"		\
+	"jmp start"		\
+	"finish:"		\
+	modify [ax]		\
+	parm [si]		\
+	value [cx]
+
+
+
 #define bswap _bswap
 
 void inl_bswap(void *dst, const void *src, int n);
@@ -138,7 +156,6 @@ void _bswap_inplace(void *mem, int n);
 	"mov [bx],dl"		\
 	"mov [di],al"		\
 	"dec cx"		\
-	"dec cx"		\
 	"jnz start"		\
 	modify [ax bx dx]	\
 	parm [si] [cx]
@@ -151,13 +168,13 @@ uint64_t inl_rotr64(uint64_t a, int b);
 uint64_t _rotr64(uint64_t a, int b);
 uint64_t _rotr64_c(uint64_t a, int b);
 #pragma aux inl_rotr64 =	\
+	"rot_bit:"		\
 	"mov di,dx"		\
 	"shr di,1"		\
-	"rot_bit:"		\
-	"rcr dx,1"		\
-	"rcr cx,1"		\
-	"rcr bx,1"		\
 	"rcr ax,1"		\
+	"rcr bx,1"		\
+	"rcr cx,1"		\
+	"rcr dx,1"		\
 	"dec si"		\
 	"jnz rot_bit"		\
 	modify [di]		\
