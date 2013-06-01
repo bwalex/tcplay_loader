@@ -29,6 +29,7 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#include "bios.h"
 
 void inl_bios_print(char *str);
 #pragma aux inl_bios_print =	\
@@ -43,6 +44,14 @@ void inl_bios_print(char *str);
 	modify [ax bx]		\
 	parm [si]
 
+void inl_bios_putc(char c);
+#pragma aux inl_bios_putc =	\
+	"mov ah, 0x0E"		\
+	"mov bx, 0x0007"	\
+	"int 0x10"		\
+	modify [bx]		\
+	parm [al]
+
 int inl_bios_read_sectors(int dev, void *dst, int start, int count);
 #pragma aux inl_bios_read_sectors = \
 	"mov ah, 0x02"		\
@@ -55,11 +64,67 @@ int inl_bios_read_sectors(int dev, void *dst, int start, int count);
 	parm [dx] [bx] [cx] [ax]	\
 	value [ax]
 
+void inl_bios_clear_kbd_buf(void);
+#pragma aux inl_bios_clear_kbd_buf =	\
+	"start: mov ah, 0x01"		\
+	"int 0x16"			\
+	"jz finish"			\
+	"mov ah, 0x00"			\
+	"int 0x16"			\
+	"jmp start"			\
+	"finish:"			\
+	modify [ax]
+
+char inl_bios_getc(void);
+#pragma aux inl_bios_getc =		\
+	"mov ah, 0x00"			\
+	"int 0x16"			\
+	value [al]
 
 void
 bios_print(char *str)
 {
 	inl_bios_print(str);
+}
+
+void
+bios_clear_kbd_buf(void)
+{
+	inl_bios_clear_kbd_buf();
+}
+
+int
+bios_read_line(char *buf, int maxlen, int flags)
+{
+	char c;
+	int read = 0;
+
+	while (read != maxlen) {
+		c = inl_bios_getc();
+		switch (c) {
+		case 0x0d: /* RETURN */
+			goto done;
+			/* NOT REACHED */
+
+		case 0x1b: /* ESC */
+			if (flags & BIOS_RL_CAN_ESC)
+				return -1;
+			break;
+			/* NOT REACHED */
+
+		default:
+			*buf++ = c;
+			++read;
+			if (flags & BIOS_RL_ECHO) {
+				if ((flags & BIOS_RL_ECHO_STAR) == BIOS_RL_ECHO_STAR)
+					c = '*';
+				inl_bios_putc(c);
+			}
+		}
+	}
+
+done:
+	return read;
 }
 
 int

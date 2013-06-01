@@ -38,8 +38,21 @@ int
 main()
 {
 	char *test = "Foobar";
+	char passphrase[12];
+	int r;
 
 	bios_print("tcplay boot1\r\n");
+	bios_print("Enter Passphrase: ");
+	bios_clear_kbd_buf();
+	r = bios_read_line(passphrase, 10, BIOS_RL_ECHO_STAR | BIOS_RL_CAN_ESC);
+	if (r < 0) {
+		bios_print("\r\nPressed ESC!\r\n");
+	} else {
+		passphrase[r] = '\0';
+		bios_print("\r\nEntered: ");
+		bios_print(passphrase);
+		bios_print("\r\n");
+	}
 
 	return crc32(test, 6);
 }

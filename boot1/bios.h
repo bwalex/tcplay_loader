@@ -27,5 +27,12 @@
  * SUCH DAMAGE.
  */
 
+#define BIOS_RL_NO_ECHO		0x00
+#define BIOS_RL_ECHO		0x01
+#define BIOS_RL_ECHO_STAR	0x03
+#define BIOS_RL_CAN_ESC		0x04
+
 void bios_print(char *str);
+void bios_clear_kbd_buf(void);
+int bios_read_line(char *buf, int maxlen, int flags);
 int bios_read_sectors(int dev, void *dst, int start, int count);
