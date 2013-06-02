@@ -184,7 +184,7 @@ void _bswap_inplace(void *mem, int n);
 	"mov [di],al"		\
 	"dec cx"		\
 	"jnz start"		\
-	modify [ax bx dx]	\
+	modify [di ax bx dx]	\
 	parm [si] [cx]
 
 

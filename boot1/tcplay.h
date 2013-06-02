@@ -62,6 +62,7 @@ struct tchdr_enc {
 };
 
 struct tchdr_dec {
+	unsigned char salt[SALT_LEN];
 	char		tc_str[4];	/* ASCII string "TRUE" */
 	uint16_t	tc_ver;		/* Volume header format version */
 	uint16_t	tc_min_ver;
@@ -83,5 +84,10 @@ struct tchdr_dec {
 	unsigned char	unused3[120];
 	uint32_t	crc_dhdr;	/* CRC32 of dec. header (except keys) */
 	unsigned char	keys[256];
+};
+
+union tchdr {
+	struct tchdr_enc enc;
+	struct tchdr_dec dec;
 };
 #pragma pack( pop )

@@ -35,23 +35,29 @@
 #include "malloc.h"
 #include "rmd160.h"
 #include "sha512.h"
+#include "generic_xts.h"
 #include "pbkdf2.h"
+#include "tcplay.h"
 
 int biosdev;
+
+union tchdr hdr;
 
 int
 main()
 {
 	char *passphrase;
-	char salt[] = "NaCL";
 	uint8_t *dk;
 	int r;
 	int iterations = 1000;
-	int dklen = 30;
-	int saltlen = strlen(salt);
+	int dklen = 64;
+	struct xts_ctx *xts_ctx;
+	uint32_t sector = 0;
+	uint32_t crc;
 
-	dk = malloc(64);
+	dk = malloc(dklen);
 	passphrase = malloc(65);
+	xts_ctx = malloc(sizeof(struct xts_ctx));
 
 	bios_print("tcplay boot1\r\n");
 	bios_print("Enter Passphrase: ");
@@ -59,24 +65,51 @@ main()
 	r = bios_read_line(passphrase, 64, BIOS_RL_ECHO_STAR | BIOS_RL_CAN_ESC);
 	if (r < 0) {
 		bios_print("\r\nPressed ESC!\r\n");
+		free(passphrase, 65);
 	} else {
 		passphrase[r] = '\0';
-		bios_print("\r\nEntered: ");
-		bios_print(passphrase);
 		bios_print("\r\n");
-
-		bios_print("PBKDF2-HMAC-SHA512:\r\n");
-		pbkdf2(dk, dklen, passphrase, strlen(passphrase), salt,
-		    saltlen, iterations, sha512_hmac, SHA512_DIGEST_SZ);
-		bios_print_hex(dk, dklen);
-		bios_print("\r\n");
-
+#if 0
 		bios_print("PBKDF2-HMAC-RIPEMD160:\r\n");
 		pbkdf2(dk, dklen, passphrase, strlen(passphrase), salt,
 		    saltlen, iterations, rmd160_hmac, RMD160_DIGEST_SZ);
 		bios_print_hex(dk, dklen);
 		bios_print("\r\n");
+#endif
+		bios_read_sectors(biosdev, &hdr, 63, 1);
 
+		bios_print("PBKDF2-HMAC-SHA512:\r\n");
+		pbkdf2(dk, dklen, passphrase, strlen(passphrase), hdr.enc.salt,
+		    SALT_LEN, iterations, sha512_hmac, SHA512_DIGEST_SZ);
+
+		free(passphrase, 65);
+
+		bios_print_hex(dk, dklen);
+		bios_print("\r\n");
+
+		xts_init(xts_ctx, aes256_init, aes256_encrypt_ecb,
+		    aes256_decrypt_ecb, 16, dk, dklen);
+		xts_decrypt(xts_ctx, hdr.enc.enc, sizeof(hdr.enc.enc), &sector, sizeof(sector));
+		xts_uninit(xts_ctx);
+
+		if (memcmp(hdr.dec.tc_str, TC_SIG, sizeof(hdr.dec.tc_str)) != 0) {
+			bios_print("Signature mismatch\r\n");
+			return -1;
+		}
+
+		bswap_inplace(&hdr.dec.tc_ver, sizeof(hdr.dec.tc_ver));
+		bswap_inplace(&hdr.dec.crc_keys, sizeof(hdr.dec.crc_keys));
+		bswap_inplace(&hdr.dec.off_mk_scope, sizeof(hdr.dec.off_mk_scope));
+		bswap_inplace(&hdr.dec.sz_mk_scope, sizeof(hdr.dec.sz_mk_scope));
+		bswap_inplace(&hdr.dec.flags, sizeof(hdr.dec.flags));
+
+		crc = crc32((void *)hdr.dec.keys, sizeof(hdr.dec.keys));
+		if (crc != hdr.dec.crc_keys) {
+			bios_print("Keys CRC mismatch\r\n");
+			return -1;
+		}
+
+		bios_print("Header successfully decrypted\r\n");
 	}
 
 	return 0;
