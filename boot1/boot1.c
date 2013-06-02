@@ -32,6 +32,7 @@
 #include "bios.h"
 #include "crc32_tiny.h"
 #include "fun.h"
+#include "malloc.h"
 #include "rmd160.h"
 #include "sha512.h"
 #include "pbkdf2.h"
@@ -41,16 +42,16 @@ int biosdev;
 int
 main()
 {
-	char *test = "Foobar";
-	char passphrase[65];
-	char salt[] = "NaCL\0\0\0\0\0\0";
-	uint8_t dk[128];
-	uint64_t deadc = 0xDEADC0DE12345678ULL;
-	uint8_t deadc_el[8];
+	char *passphrase;
+	char salt[] = "NaCL";
+	uint8_t *dk;
 	int r;
 	int iterations = 1000;
 	int dklen = 30;
 	int saltlen = strlen(salt);
+
+	dk = malloc(64);
+	passphrase = malloc(65);
 
 	bios_print("tcplay boot1\r\n");
 	bios_print("Enter Passphrase: ");
@@ -58,23 +59,6 @@ main()
 	r = bios_read_line(passphrase, 64, BIOS_RL_ECHO_STAR | BIOS_RL_CAN_ESC);
 	if (r < 0) {
 		bios_print("\r\nPressed ESC!\r\n");
-		bios_print_hex((uint8_t *)&deadc, sizeof(deadc));
-		bios_print("\r\n");
-
-		bswap(deadc_el, &deadc, sizeof(deadc));
-		bios_print_hex(deadc_el, sizeof(deadc));
-		bios_print("\r\n");
-
-		bswap_inplace(&deadc, sizeof(deadc));
-		bios_print_hex((uint8_t *)&deadc, sizeof(deadc));
-		bios_print("\r\n");
-
-		deadc = 0xDEADC0DE12345678ULL;
-		bios_print_hex((uint8_t *)&deadc, sizeof(deadc));
-		bios_print("\r\n");
-		deadc = rotr64(deadc, 32);
-		bios_print_hex((uint8_t *)&deadc, sizeof(deadc));
-		bios_print("\r\n");
 	} else {
 		passphrase[r] = '\0';
 		bios_print("\r\nEntered: ");
@@ -95,11 +79,5 @@ main()
 
 	}
 
-	bios_print("\r\n");
-	bios_print_number(37, 10);
-	bios_print("\r\n");
-	bios_print_number(37, 16);
-
-
-	return crc32(test, 6);
+	return 0;
 }

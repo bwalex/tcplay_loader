@@ -27,6 +27,9 @@ generic_xts.o: $(SRC_PATH)/generic_xts.c
 aes256.o: $(SRC_PATH)/aes256.c
 	$(CC) $(CFLAGS) -D_STANDALONE -I$(SRC_PATH) $(SRC_PATH)/aes256.c -c
 
+malloc.o: $(SRC_PATH)/malloc.c
+	$(CC) $(CFLAGS) -D_STANDALONE -I$(SRC_PATH) $(SRC_PATH)/malloc.c -c
+
 sha512test: sha512test.c sha512.o
 	$(CC) $(CFLAGS) -o sha512test -I$(SRC_PATH) sha512test.c sha512.o
 
@@ -39,6 +42,9 @@ pbkdf2test: pbkdf2test.c pbkdf2.o rmd160.o sha512.o
 aes256test: aes256test.c aes256.o generic_xts.o
 	$(CC) $(CFLAGS) -o aes256test -I$(SRC_PATH) aes256test.c aes256.o generic_xts.o
 
+alloctest: alloctest.c malloc.o
+	$(CC) $(CFLAGS) -o alloctest -I$(SRC_PATH) alloctest.c malloc.o
+
 ascii2hex: ascii2hex.c
 	$(CC) -o ascii2hex ascii2hex.c
 
@@ -49,4 +55,5 @@ clean:
 	$(RM) rmd160test
 	$(RM) pbkdf2test
 	$(RM) aes256test
+	$(RM) alloctest
 	$(RM) ascii2hex

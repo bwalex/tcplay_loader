@@ -30,6 +30,7 @@
 #include <stdint.h>
 #ifndef _STANDALONE
 #include "fun.h"
+#include "malloc.h"
 #else
 #include <string.h>
 #endif
@@ -60,10 +61,6 @@ bswap(void *dstv, uint32_t *src, size_t sz)
 }
 #endif
 
-/*
- * salt needs 4 extra bytes of space!
- * XXX: consider implementing some sort of cheapo malloc.
- */
 void
 pbkdf2(uint8_t *dk, int dklen, uint8_t *pass, int passlen, uint8_t *salt,
     int saltlen, int iterations, hmac_fn_t hmac_fn, int hmac_digest_len)
@@ -72,15 +69,19 @@ pbkdf2(uint8_t *dk, int dklen, uint8_t *pass, int passlen, uint8_t *salt,
 	uint32_t i = 0;
 	uint8_t ut[PBKDF2_MAX_DIGEST_LENGTH];
 	uint8_t ux[PBKDF2_MAX_DIGEST_LENGTH];
+	uint8_t *saltp;
 	int c, j;
+
+	saltp = malloc(saltlen + 4);
+	memcpy(saltp, salt, saltlen);
 
 	while (dklen > 0) {
 		++i;
 
 		rem = min(dklen, hmac_digest_len);
 
-		bswap(salt+saltlen, &i, sizeof(uint32_t));
-		hmac_fn(ut, pass, passlen, salt, saltlen+sizeof(uint32_t));
+		bswap(saltp+saltlen, &i, sizeof(uint32_t));
+		hmac_fn(ut, pass, passlen, saltp, saltlen+sizeof(uint32_t));
 		memcpy(dk, ut, rem);
 
 		for (c = 1; c < iterations; c++) {
@@ -93,5 +94,11 @@ pbkdf2(uint8_t *dk, int dklen, uint8_t *pass, int passlen, uint8_t *salt,
 		dk += rem;
 		dklen -= rem;
 	}
+
+#ifdef _STANDALONE
+	free(saltp);
+#else
+	free(saltp, saltlen + 4);
+#endif
 }
 

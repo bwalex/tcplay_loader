@@ -28,8 +28,9 @@
 
 EXTERN main_    : near
 EXTERN _biosdev : word
+EXTERN _heap_base : word
 
-DGROUP group CONST,_DATA,DATA,_BSS,STACK
+DGROUP group CONST,_DATA,DATA,_BSS,STACK,HEAP
 
 STARTUP	segment	word public 'CODE'
 _cstart_ proc near public
@@ -48,6 +49,10 @@ _cstart_ proc near public
         sub cx, di
         xor al, al
         rep stosb
+
+	; Set up heap pointer
+	mov ax, offset DGROUP:heap_start
+	mov [_heap_base], ax
 
 	; Store the bios boot dev
 	xor dh, dh
@@ -80,5 +85,12 @@ STACK   segment para stack 'STACK'
         db      (STACK_SIZE) dup(?)
 end_of_stack:
 STACK   ends
+
+HEAP_SIZE	equ	2048
+HEAP	segment para 'HEAP'
+heap_start:
+	db	(HEAP_SIZE) dup(?)
+end_of_heap:
+HEAP	ends
 
 end
