@@ -154,7 +154,7 @@ run_hmac_tests(void)
 	int klen;
 	int reslen;
 	int datalen;
-	int i;
+	int i = 0;
 
 	printf("-- HMAC-SHA512 tests (RFC 4231) --\n");
 	test = &hmac_tests[0];

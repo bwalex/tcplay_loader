@@ -136,7 +136,7 @@ run_hmac_tests(void)
 	int klen;
 	int reslen;
 	int datalen;
-	int i;
+	int i = 0;
 
 	printf("-- HMAC-RIPEMD160 tests (RFC 2286) --\n");
 	test = &hmac_tests[0];
