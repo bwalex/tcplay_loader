@@ -26,6 +26,9 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#ifndef _PBKDF2_H
+#define _PBKDF2_H
+
 #include <sys/types.h>
 #include <stdint.h>
 
@@ -37,3 +40,5 @@ typedef void (*hmac_fn_t)(uint8_t *, uint8_t *, int, uint8_t *, int);
 
 void pbkdf2(uint8_t *dk, int dklen, uint8_t *pass, int passlen, uint8_t *salt,
     int saltlen, int iterations, hmac_fn_t hmac_fn, int hmac_digest_len);
+
+#endif

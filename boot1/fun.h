@@ -31,6 +31,9 @@
 #include <stdint.h>
 
 
+#define NULL ((void *)0)
+
+
 #define memcpy inl_memcpy
 
 void *inl_memcpy(void *dst, const void *src, int n);

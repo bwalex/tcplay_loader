@@ -26,6 +26,10 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#ifndef _TCPLAY_H
+#define _TCPLAY_H
+
+#include "pbkdf2.h"
 
 #define MAX_BLKSZ		4096
 #define MAX_KEYSZ		192
@@ -91,3 +95,12 @@ union tchdr {
 	struct tchdr_dec dec;
 };
 #pragma pack( pop )
+
+
+struct pbkdf_prf {
+	hmac_fn_t hmac_fn;
+	int iterations;
+	int digest_sz;
+};
+
+#endif

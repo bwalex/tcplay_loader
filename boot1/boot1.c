@@ -43,6 +43,28 @@ int biosdev;
 
 union tchdr hdr;
 
+
+struct pbkdf_prf prfs[] = {
+	{
+		.hmac_fn	= rmd160_hmac,
+		.iterations	= 2000,
+		.digest_sz	= RMD160_DIGEST_SZ
+	},
+	{
+		.hmac_fn	= rmd160_hmac,
+		.iterations	= 1000,
+		.digest_sz	= RMD160_DIGEST_SZ
+	},
+	{
+		.hmac_fn	= sha512_hmac,
+		.iterations	= 1000,
+		.digest_sz	= SHA512_DIGEST_SZ
+	},
+	{
+		.hmac_fn	= NULL
+	}
+};
+
 int
 main()
 {
@@ -69,16 +91,9 @@ main()
 	} else {
 		passphrase[r] = '\0';
 		bios_print("\r\n");
-#if 0
-		bios_print("PBKDF2-HMAC-RIPEMD160:\r\n");
-		pbkdf2(dk, dklen, passphrase, strlen(passphrase), salt,
-		    saltlen, iterations, rmd160_hmac, RMD160_DIGEST_SZ);
-		bios_print_hex(dk, dklen);
-		bios_print("\r\n");
-#endif
+
 		bios_read_sectors(biosdev, &hdr, 63, 1);
 
-		bios_print("PBKDF2-HMAC-SHA512:\r\n");
 		pbkdf2(dk, dklen, passphrase, strlen(passphrase), hdr.enc.salt,
 		    SALT_LEN, iterations, sha512_hmac, SHA512_DIGEST_SZ);
 
