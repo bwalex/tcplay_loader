@@ -63,6 +63,7 @@ void *inl_bzero(void *m, int sz);
 #pragma aux inl_bzero =		\
 	"xor ax,ax"		\
 	"rep stosb"		\
+	modify [ax]		\
 	parm [di] [cx]
 
 
